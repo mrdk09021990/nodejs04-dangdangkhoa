@@ -1,4 +1,4 @@
-const ItemsModel = require(__path_schemas +  'sliders');
+const slidersModel = require(__path_schemas +  'sliders');
 
 
 let createFilterStatus =  async (currentStatus) => {
@@ -13,7 +13,7 @@ let createFilterStatus =  async (currentStatus) => {
 		let condition = (item.value !== "all") ? {status: item.value} : {};
 		if(item.value === currentStatus) statusFilter[index].class = 'success';
 
-		await ItemsModel.count(condition).then( (data) => {
+		await slidersModel.count(condition).then( (data) => {
 			statusFilter[index].count = data;
 		});
 	}

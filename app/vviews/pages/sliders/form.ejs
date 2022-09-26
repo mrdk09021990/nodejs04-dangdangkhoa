@@ -33,6 +33,13 @@
 					</select>
 				</div>
 			</div>
+
+			<div id="id_content" class="form-group row">
+				<label for="status" class="col-sm-2 col-form-label text-sm-right">content</label>
+				<textarea class="form-control form-control-sm" name="content" rows="10" cols="80">
+					<%= item.content %>
+				</textarea>
+			</div>
 		
 		</div>
 		<div class="card-footer">
@@ -44,3 +51,19 @@
 		</div>
 	</form>
 </div>
+
+<script>
+	CKEDITOR.replace( 'id_content' );
+</script>
+
+<script>
+	ClassicEditor
+    .create( document.querySelector( '#id_content' ) )
+    .then( editor => {
+        editor.model.document.on('change:data', () => {
+            $('input#id_content').val(editor.getData());
+        });
+    } )
+</script>
+
+

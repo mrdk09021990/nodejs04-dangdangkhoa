@@ -9,9 +9,9 @@ const session = require('express-session');
 const flash = require('express-flash-notification');
 const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
-var moment = require('moment');
 
 const pathConfig = require('./path');
+var moment = require('moment');
 
 // Define Path
 global.__base           = __dirname + '/';
@@ -29,7 +29,6 @@ const databaseConfig = require(__path_configs + 'database');
 
 
 mongoose.connect(`mongodb+srv://${databaseConfig.username}:${databaseConfig.password}@cluster0.5dyiarr.mongodb.net/${databaseConfig.database}`);
-
 
 
 

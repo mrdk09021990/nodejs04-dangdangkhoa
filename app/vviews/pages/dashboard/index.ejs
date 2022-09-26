@@ -1,13 +1,11 @@
 <%  
     let arrBox = [
-        {name: 'Items', icon: 'ion-ios-people', link: `${systemConfig.prefixAdmin}/items`, total: countItems},
-        {name: 'Sliders', icon: 'ion-ios-people', link: `${systemConfig.prefixAdmin}/sliders`, total: countSliders}
-       
+        {name: 'Items', icon: 'ion-ios-people', link: `${systemConfig.prefixAdmin}/items`, total: countItems}
     ];
-   
+
     let xhtmlBox = '';
     arrBox.forEach(box => {
-        xhtmlBox += `<div class="col-lg-3 col-6 ">
+        xhtmlBox += `<div class="col-lg-3 col-6">
                         <div class="small-box bg-info">
                             <div class="inner">
                                 <h3>${box.total}</h3>
