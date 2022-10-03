@@ -1,0 +1,12 @@
+<% 
+groupsHelper = (collection , groups , id) => {
+       
+        let classGroups       = (groups == 'yes') ? `fas fa-check` : `fas fa-user-check` ;
+
+        let link              = systemConfig.prefixAdmin + '/' + collection + '/change-groups/' + id + '/' + groups ;
+       
+        return `<a href="${link}"><i class="${classGroups} "></i></a>`;
+    }
+%>
+
+

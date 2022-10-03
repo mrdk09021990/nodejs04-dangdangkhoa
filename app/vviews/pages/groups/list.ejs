@@ -5,6 +5,7 @@
 <% include ./../../helpers/highlight %>
 <% include ./../../helpers/source-by %>
 <% include ./../../helpers/sort %>
+<% include ./../../helpers/groups %>
 
 <% 
 	const collection = "groups";
@@ -69,6 +70,7 @@
 						<%- sortHelper(collection , 'name' , 'name' , sortField , sortType , 'width: 20%') %>
 						<%- sortHelper(collection , 'status' , 'status' , sortField , sortType) %>
 						<%- sortHelper(collection , 'ordering' , 'ordering' , sortField , sortType) %>
+						<%- sortHelper(collection , 'groups' , 'groups' , sortField , sortType) %>
 						<th class="text-center">created</a></th>
 						<th class="text-center">modified</a></th>
 						<th class="text-center">Action</th>
@@ -93,6 +95,9 @@
 						
 						<td class="text-center">
 							<input type="number" value="<%= item.ordering %>" class="text-center ordering">
+						</td>
+						<td class="text-center">
+							<%- groupsHelper(collection , item.groups , item.id) %>
 						</td>
 						<td ><%- sourceByHelper(item.created.user_name, item.created.time) %></td>
 						<td ><%- sourceByHelper(item.modified.user_name, item.modified.time) %></td>

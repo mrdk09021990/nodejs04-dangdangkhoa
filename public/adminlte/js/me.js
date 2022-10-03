@@ -3,9 +3,9 @@ $(document).ready(function () {
     var fmAdmin = $("#zt-form");
 
     // CKEDITOR
-    if ($('textarea#content_ck').length) {
-        CKEDITOR.replace('content_ck');
-    }
+    
+	CKEDITOR.replace( 'id_content' );
+
 
     //call active menu
     activeMenu();

@@ -11,4 +11,7 @@ module.exports = {
     ERROR_ORDERING: 'Phải là số nguyên lớn hơn %d và bé hơn %d',
     ERROR_STATUS: 'Phải là một giá trị khác rỗng',
     GROUPS: 'Phải là một giá trị khác rỗng',
+    GROUPS_users: 'Phải là một giá trị khác rỗng',
+    USERS: 'Phải là một giá trị khác rỗng',
+    CHANGE_groups_SUCCESS : 'Cập nhật groups thành công',
 };

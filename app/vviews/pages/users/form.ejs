@@ -1,14 +1,20 @@
+<% include ./../../helpers/selectbox %>
+
 <% 
-	const collection = "groups";
+	const collection = "users";
 	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
 %>
 
-<% include ./../../elements/errors %>
+
+
+
+ <%= JSON.stringify(item) %> 
+
 
 <div class="card card-info card-outline">
 	<form action="<%= linkPrefix %>save/" method="POST" class="mb-0" >
 		<div class="card-body">
-		
+			
 			<div class="form-group row">
 				<label for="name" class="col-sm-2 col-form-label text-sm-right required">Name</label>
 				<div class="col-xs-12 col-sm-8">
@@ -34,11 +40,14 @@
 				</div>
 			</div>
 
-			<div class="form-group">
-				<label for="name" class="col-sm-2 col-form-label text-sm-right required">groups</label><br />
-					<input class="col-sm-2 col-form-label text-sm-right required" type="radio" name="groups" value="yes" <% if(item.groups == 'yes') {%> checked="checked" <%}%> >yes
-					<input class="col-sm-2 col-form-label text-sm-right required" type="radio" name="groups" value="no" <% if(item.groups == 'no') {%> checked="checked" <%}%> >no
-			</div>
+			<div class="form-group row">
+				<label for="status" class="col-sm-2 col-form-label text-sm-right">groups_user</label>
+				<div class="col-xs-12 col-sm-8">
+					
+					 <%- selectboxHelper (`groups_user` , GRoupsItems , item.groups_user) %> 
+				 </div>
+			</div> 
+
 
 			<div id="id_content" class="form-group row">
 				<label for="status" class="col-sm-2 col-form-label text-sm-right">content</label>
@@ -50,7 +59,8 @@
 		</div>
 		<div class="card-footer">
 			<div class="col-12 col-sm-8 offset-sm-2">
-				<input class="form-control" name="id" value="<%= item.id %>" type="hidden" >
+				<input class="form-control" name="id" value="<%= item.group_name %>" type="hidden" >
+				<input class="form-control" name="group_name"  type="hidden" >
 				<button type="submit" class="btn btn-sm btn-success mr-1"> Submit</button>
 				<a href="<%= linkPrefix %>" class="btn btn-sm btn-danger mr-1"> Cancel</a>
 			</div>

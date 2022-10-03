@@ -4,7 +4,7 @@ const util = require('util');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
-const ItemsModel 	= require(__path_schemas + 'items');
+const ItemsModel 	= require(__path_models + 'items');
 const ValidateItems	= require(__path_validates + 'items');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
@@ -17,10 +17,10 @@ const folderView	 = __path_views + 'pages/items/';
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
-	let objWhere	 = {};
-	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
-	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus);
+	let params	 = {};
+	params.keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
+	params.currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
+	
 
 	let pagination 	 = {
 			totalItems		 : 1,
@@ -32,6 +32,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	if(currentStatus !== 'all') objWhere.status = currentStatus;
 	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
 
+	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus);
 	await ItemsModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
 	});

@@ -3,40 +3,18 @@
         {name: 'Items', icon: 'fa-users', link: `${systemConfig.prefixAdmin}/items`},
         {name: 'Dashboard', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/dashboard`},
         {name: 'sliders', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/sliders`},
-        {name: 'khoa', icon: 'fa-tachometer-alt',  link: `#` , isChild : true, children:[{name: 'groups', icon: 'fa-users', link: `${systemConfig.prefixAdmin}/groups`},{name: 'users', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/users`},]},
+        {name: 'groups', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/groups`},
         
     ];
 
     let xhtmlMenu = '';
     arrMenu.forEach(menu => {
-        if(menu.isChild){
-            let htmlChild ='';
-            menu.children.forEach(child =>{
-                htmlChild += `<li class="nav-item">
-                    <a href="${child.link}" class="nav-link" data-active="${child.name.toLowerCase()}">
-                        <i class="nav-icon fas ${child.icon}"></i>
-                        <p>${child.name}</p>
+        xhtmlMenu += `<li class="nav-item">
+                    <a href="${menu.link}" class="nav-link" data-active="${menu.name.toLowerCase()}">
+                        <i class="nav-icon fas ${menu.icon}"></i>
+                        <p>${menu.name}</p>
                     </a>
                 </li>`;
-            })
-            xhtmlMenu += `<li class="nav-item">
-                <a href="${menu.link}" class="nav-link" data-active="${menu.name.toLowerCase()}">
-                    <i class="nav-icon fas ${menu.icon}"></i>
-                    <p>${menu.name}</p>
-                </a>
-                <ul>
-                    ${htmlChild}
-                </ul>
-            </li>`;
-        }else{
-            xhtmlMenu += `<li class="nav-item">
-                <a href="${menu.link}" class="nav-link" data-active="${menu.name.toLowerCase()}">
-                    <i class="nav-icon fas ${menu.icon}"></i>
-                    <p>${menu.name}</p>
-                </a>
-            </li>`;
-        }
-       
     });   
 %>
 

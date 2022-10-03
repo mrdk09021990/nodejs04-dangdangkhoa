@@ -126,4 +126,8 @@ $(document).ready(function () {
             $(this).parent().css({'display':'none'});
         })    
     }
+    // truong hop chon Group o Users
+    $('select[name="groups_user"]').change(function(){
+        $('input[name="group_name"]').val($(this).find('option:select').text())
+    });
 });
