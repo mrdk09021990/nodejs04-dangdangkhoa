@@ -16,8 +16,8 @@ module.exports = {
             .limit(params.pagination.totalItemsPerPage)
     },
 
-    getItem:  (id , options = null) => {
-        return ItemsModel.findById(id);
+    getItem:  (params) => {
+
     },
 
     countItems:  (params) => {
@@ -63,44 +63,7 @@ module.exports = {
                 }else{
                     return ItemsModel.updateOne({_id: cids} , data )
                 }
-	},
-
-    deleteItem:  (id , options = null ) => {
-        
-        if (options.task == "delete-one") {
-            return ItemsModel.deleteOne({_id: id});
-        }
-
-        if (options.task == "delete-multi") {
-            return ItemsModel.remove({_id: {$in: id}} );
-        }   
-    },
-
-    saveItem:  (item , options = null ) => {
-        
-        if (options.task == "add") {
-            item.created = {
-				user_id     	: 0,
-				user_name   	: `admin`,
-				time       		: Date.now()	
-			}
-            return new ItemsModel(item).save();
-        }
-
-        if (options.task == "edit") {
-           return ItemsModel.updateOne({_id: item.id}, {
-				    ordering: parseInt(item.ordering),
-				    name				: item.name,
-				    status				: item.status,
-				    content 			: item.content,
-				    modified			: {
-                        user_id     : 0,
-                        user_name   : 0,
-                        time       : Date.now()
-					}
-            });
-        }
-    }   
+	}
 }
 
 

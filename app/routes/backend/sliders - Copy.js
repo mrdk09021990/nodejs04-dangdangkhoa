@@ -1,66 +1,49 @@
 var express = require('express');
-const { Collection } = require('mongoose');
 var router 	= express.Router();
 const util = require('util');
-const modelName = 'groups';
-
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
-const ItemsModel 	= require(__path_schemas + modelName);
-const ValidateItems	= require(__path_validates + modelName);
-const UtilsHelpers 	= require(__path_helpers + modelName);
+const ItemsModel 	= require(__path_schemas + 'sliders');
+const ValidateItems	= require(__path_validates + 'sliders');
+const UtilsHelpers 	= require(__path_helpers + 'sliders');
 const ParamsHelpers = require(__path_helpers + 'params');
 
 
-const linkIndex		 = '/' + systemConfig.prefixAdmin + `/${modelName}/`;
+const linkIndex		 = '/' + systemConfig.prefixAdmin + '/sliders/';
 const pageTitleIndex = 'Item Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + `pages/${modelName}/`;
+const folderView	 = __path_views + 'pages/sliders/';
 
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
-	let objWhere	 = {};
-	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
-	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus , 'groups');
-	let sortField			= ParamsHelpers.getParam(req.session, `sort_field`, `name`); 
-	let sortType			= ParamsHelpers.getParam(req.session, `sort_type`, `asc`); 
-	let sort 				= {};
-	sort[sortField]			= sortType;
+	let params	 		= {};
+	params.keyword		 		= ParamsHelpers.getParam(req.query, 'keyword', '');
+	params.currentStatus		= ParamsHelpers.getParam(req.params, 'status', 'all'); 
+	params.sortField			= ParamsHelpers.getParam(req.session, `sort_field`, `name`); 
+	params.sortType				= ParamsHelpers.getParam(req.session, `sort_type`, `asc`); 
 
-	let pagination 	 = {
+	params.pagination 	 = {
 			totalItems		 : 1,
 			totalItemsPerPage: 4,
 			currentPage		 : parseInt(ParamsHelpers.getParam(req.query, 'page', 1)),
 			pageRanges		 : 3
 	};
 
+	let statusFilter		= await UtilsHelpers.createFilterStatus(params.currentStatus , 'sliders');
+	await ItemsModel.countItem(params).then( (data) => {
+					params.pagination.totalItems = data;
+				});
 
-	if(currentStatus !== 'all') objWhere.status = currentStatus;
-	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
-
-	await ItemsModel.count(objWhere).then( (data) => {
-		pagination.totalItems = data;
-	});
-	
-	ItemsModel
-		.find(objWhere)
-		.sort(sort)
-		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
-		.limit(pagination.totalItemsPerPage)
-		.then( (items) => {
-			res.render(`${folderView}list`, { 
-				pageTitle: pageTitleIndex,
-				items,
-				statusFilter,
-				pagination,
-				currentStatus,
-				keyword,
-				sortField,
-				sortType
+	ItemsModel.listItems(params)
+			.then( (items) => {
+				res.render(`${folderView}list`, { 
+					pageTitle: pageTitleIndex,
+					items,
+					statusFilter,
+					params
 			});
 		});
 });
@@ -194,7 +177,6 @@ router.post('/save', (req, res, next) => {
 				ordering: parseInt(item.ordering),
 				name				: item.name,
 				status				: item.status,
-				groups				: item.groups,
 				content 			: item.content,
 				modified			: {
 					user_id     : 0,

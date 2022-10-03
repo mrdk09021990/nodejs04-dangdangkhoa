@@ -55,7 +55,7 @@ router.get('/change-status/:id/:status', (req, res, next) => {
 	ItemsModel.changeStatus(id ,  currentStatus,  {task: "update-one"}).then((result) => {
 		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
 		res.redirect(linkIndex);
-	});   
+	});
 });
 
 // Change groups
@@ -103,7 +103,7 @@ router.post('/change-ordering', (req, res, next) => {
 // Delete
 router.get('/delete/:id', (req, res, next) => {
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 	
-	ItemsModel.deleteItem(id , {task: 'delete-one'}).then((result) => {
+	ItemsModel.deleteOne({_id: id}, (err, result) => {
 		req.flash('success', notify.DELETE_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -111,7 +111,7 @@ router.get('/delete/:id', (req, res, next) => {
 
 // Delete - Multi
 router.post('/delete', (req, res, next) => {
-	ItemsModel.deleteItem(req.body.cid , {task: 'delete-multi'}).then((result) => {
+	ItemsModel.remove({_id: {$in: req.body.cid }}, (err, result) => {
 		req.flash('success', util.format(notify.DELETE_MULTI_SUCCESS, result.n), false);
 		res.redirect(linkIndex);
 	});
@@ -125,7 +125,7 @@ router.get(('/form(/:id)?'), (req, res, next) => {
 	if(id === '') { // ADD
 		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors});
 	}else { // EDIT
-		ItemsModel.getItem(id).then((item) =>{
+		ItemsModel.findById(id, (err, item) =>{
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors});
 		});	
 	}
@@ -143,17 +143,34 @@ router.post('/save', (req, res, next) => {
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors});
 		}else {
-			ItemsModel.saveItem(item , {task: 'edit'}).then((result) => {
-				req.flash('success', notify.ADD_SUCCESS, false);
+			ItemsModel.updateOne({_id: item.id}, {
+				ordering: parseInt(item.ordering),
+				name				: item.name,
+				status				: item.status,
+				content 			: item.content,
+				modified			: {
+					user_id     : 0,
+					user_name   : 0,
+					time       : Date.now()
+					}
+				
+			}, (err, result) => {
+				req.flash('success', notify.EDIT_SUCCESS, false);
 				res.redirect(linkIndex);
 			});
 		}
-
 	}else { // add
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors});
 		}else {
-			ItemsModel.saveItem(item , {task: 'add'}).then(()=> {
+			item.created = {
+				user_id     	: 0,
+				user_name   	: `admin`,
+				time       		: Date.now()
+				
+			}
+
+			new ItemsModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
 			})

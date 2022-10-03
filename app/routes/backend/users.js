@@ -7,8 +7,8 @@ const modelName = 'users';
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
-const ItemsModel 	= require(__path_models + modelName);
-const GroupsModel 	= require(__path_models + 'groups');
+const ItemsModel 	= require(__path_schemas + modelName);
+const GroupsModel 	= require(__path_schemas + 'groups');
 const ValidateItems	= require(__path_validates + modelName);
 const UtilsHelpers 	= require(__path_helpers + modelName);
 const ParamsHelpers = require(__path_helpers + 'params');
@@ -23,38 +23,46 @@ const folderView	 = __path_views + `pages/${modelName}/`;
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
-	let params	 		= {};
-	params.keyword		 		= ParamsHelpers.getParam(req.query, 'keyword', '');
-	params.currentStatus		= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	params.sortField			= ParamsHelpers.getParam(req.session, `sort_field`, `name`); 
-	params.sortType				= ParamsHelpers.getParam(req.session, `sort_type`, `asc`); 
-	params.groups_user			= ParamsHelpers.getParam(req.session, `groups_user`, ``);
-	params.pagination 	 = {
+	let objWhere	 = {};
+	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
+	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
+	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus , 'groups');
+	let sortField			= ParamsHelpers.getParam(req.session, `sort_field`, `name`); 
+	let sortType			= ParamsHelpers.getParam(req.session, `sort_type`, `asc`); 
+	let sort 				= {};
+	sort[sortField]			= sortType;
+
+	let pagination 	 = {
 			totalItems		 : 1,
 			totalItemsPerPage: 4,
 			currentPage		 : parseInt(ParamsHelpers.getParam(req.query, 'page', 1)),
 			pageRanges		 : 3
 	};
 
-	let statusFilter		= await UtilsHelpers.createFilterStatus(params.currentStatus , 'users');
 
-	let groupsItems = [];
+	if(currentStatus !== 'all') objWhere.status = currentStatus;
+	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
 
-	await GroupsModel.listItemsInSelectbox().then((items) => {
-		groupsItems = items;
-		groupsItems.unshift({_id: 'allvalue' , name: "All group"});
+	await ItemsModel.count(objWhere).then( (data) => {
+		pagination.totalItems = data;
 	});
-
-	await ItemsModel.countItems(params).then( (data) => {
-		params.pagination.totalItems = data;
-	});
-	ItemsModel.listItems(params)
-			.then( (items) => {
+	
+	ItemsModel
+		.find(objWhere)
+		.select('name status ordering created modified group.name')
+		.sort(sort)
+		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
+		.limit(pagination.totalItemsPerPage)
+		.then( (items) => {
 			res.render(`${folderView}list`, { 
 				pageTitle: pageTitleIndex,
 				items,
 				statusFilter,
-				params
+				pagination,
+				currentStatus,
+				keyword,
+				sortField,
+				sortType
 			});
 		});
 });
