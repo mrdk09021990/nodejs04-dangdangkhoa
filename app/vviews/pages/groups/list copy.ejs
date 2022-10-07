@@ -24,15 +24,15 @@
 	<div class="ca
 		<div class="row justify-content-between">
 			<div class="mb-1">
-				<%- filterStatusHelper(linkPrefix, statusFilter, keyword) %>	 
+				<%- filterStatusHelper(linkPrefix, statusFilter, params.keyword) %>	 
 			</div>
 			
 			<div class="mb-1">
-				<form action="<%= linkPrefix %>status/<%= currentStatus %>" method="GET">
+				<form action="<%= linkPrefix %>status/<%= params.currentStatus %>" method="GET">
 					<div class="input-group">
-						<input type="text" class="form-control form-control-sm" name="keyword" value="<%= keyword %>" style="min-width: 300px">
+						<input type="text" class="form-control form-control-sm" name="keyword" value="<%= params.keyword %>" style="min-width: 300px">
 						<div class="input-group-append">
-							<a type="button" class="btn btn-sm btn-danger"  href="<%= linkPrefix %>status/<%= currentStatus %>">Clear</a>
+							<a type="button" class="btn btn-sm btn-danger"  href="<%= linkPrefix %>status/<%= params.currentStatus %>">Clear</a>
 							<button type="submit" class="btn btn-sm btn-info" id="btn-search">Search</button>
 						</div>
 					</div>
@@ -67,10 +67,10 @@
 							</div>
 						</th>
 						<th class="text-center">#</a></th>
-						<%- sortHelper(linkPrefix , 'name' , 'name' , sortField ,sortType , 'width: 20%') %>
-						<%- sortHelper(linkPrefix , 'status' , 'status' , sortField , sortType) %>
-						<%- sortHelper(linkPrefix , 'ordering' , 'ordering' , sortField , sortType) %>
-						<%- sortHelper(linkPrefix , 'groups_acp' , 'groups_acp' , sortField , sortType) %>
+						<%- sortHelper(linkPrefix , 'name' , 'name' , params.sortField , params.sortType , 'width: 20%') %>
+						<%- sortHelper(linkPrefix , 'status' , 'status' , params.sortField , params.sortType) %>
+						<%- sortHelper(linkPrefix , 'ordering' , 'ordering' , params.sortField , params.sortType) %>
+						<%- sortHelper(linkPrefix , 'groups_acp' , 'groups_acp' , params.sortField , params.sortType) %>
 						<th class="text-center">created</a></th>
 						<th class="text-center">modified</a></th>
 						<th class="text-center">Action</th>
@@ -88,7 +88,7 @@
 						
 						</td>
 						<td class="text-center"><%= index+1 %></td>
-						<td class="text-center"><%- highlightHelper(item.name, keyword) %></td>
+						<td class="text-center"><%- highlightHelper(item.name, params.keyword) %></td>
 						<td class="text-center position-relative">
 							<%- statusHelper(linkPrefix, item.status, item.id) %>
 						</td>
@@ -118,6 +118,6 @@
 		</form>
 	</div>
 	<div class="card-footer clearfix">
-		<%- paginationHelper(pagination, linkPrefix, currentStatus, keyword) %>
+		<%- paginationHelper(params.pagination, linkPrefix, params.currentStatus, params.keyword) %>
 	</div>
 </div>

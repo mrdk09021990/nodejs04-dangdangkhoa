@@ -3,45 +3,64 @@ const { Collection } = require('mongoose');
 var router 	= express.Router();
 const util = require('util');
 const modelName = 'users';
-
+let multer = require('multer');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
 const ItemsModel 	= require(__path_schemas + modelName);
 const GroupsModel 	= require(__path_schemas + 'groups');
 const ValidateItems	= require(__path_validates + modelName);
-const UtilsHelpers 	= require(__path_helpers + modelName);
+const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
 
-
 const linkIndex		 = '/' + systemConfig.prefixAdmin + `/${modelName}/`;
-const pageTitleIndex = 'Item Management';
+const pageTitleIndex = 'users Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + `pages/${modelName}/`;
 
+let storage = multer.diskStorage({
+	destination : function (req ,file , cb ) {
+		cb(null , 'tmp/my-uploads')
+	},
+	filename: function (req, file , cb) {
+		cb(null , file.fielname + '_' + Date.now())
+	}
+});
+
+let upload = multer ({storage: storage});
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
-	let objWhere	 = {};
-	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
-	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus , 'groups');
+	let objWhere	 		= {};
+	let keyword				= ParamsHelpers.getParam(req.query, 'keyword', '');
+	let currentStatus		= ParamsHelpers.getParam(req.params, 'status', 'all'); 
+	let statusFilter 		= await UtilsHelpers.createFilterStatus(currentStatus , modelName);
 	let sortField			= ParamsHelpers.getParam(req.session, `sort_field`, `name`); 
 	let sortType			= ParamsHelpers.getParam(req.session, `sort_type`, `asc`); 
+	let groupsID			= ParamsHelpers.getParam(req.session, 'groups_id', ''); 
 	let sort 				= {};
 	sort[sortField]			= sortType;
 
 	let pagination 	 = {
-			totalItems		 : 1,
-			totalItemsPerPage: 4,
-			currentPage		 : parseInt(ParamsHelpers.getParam(req.query, 'page', 1)),
-			pageRanges		 : 3
+		totalItems		 : 1,
+		totalItemsPerPage: 4,
+		currentPage		 : parseInt(ParamsHelpers.getParam(req.query, 'page', 1)),
+		pageRanges		 : 3
 	};
 
+	let groupsItems = [];
 
+			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+				groupsItems = items;
+				groupsItems.unshift({_id: 'allvalue' , name: 'All groups'});
+			})
+
+	if(groupsID !== 'allvalue') objWhere['groups.id'] = groupsID ;
+	
 	if(currentStatus !== 'all') objWhere.status = currentStatus;
 	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
+	
 
 	await ItemsModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
@@ -49,7 +68,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	
 	ItemsModel
 		.find(objWhere)
-		.select('name status ordering created modified groups_user.name')
+		.select('name status ordering created modified groups.name')
 		.sort(sort)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
 		.limit(pagination.totalItemsPerPage)
@@ -62,7 +81,9 @@ router.get('(/status/:status)?', async (req, res, next) => {
 				currentStatus,
 				keyword,
 				sortField,
-				sortType
+				sortType,
+				groupsItems,
+				groupsID
 			});
 		});
 });
@@ -72,29 +93,39 @@ router.get('/change-status/:id/:status', (req, res, next) => {
 	let currentStatus	= ParamsHelpers.getParam(req.params, 'status', 'active'); 
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 
 	let status			= (currentStatus === "active") ? "inactive" : "active";
-	let data 			= {
-		status		: status,
-		modified	: {
-			user_id     : 0,
-			user_name   : 0,
-			time       : Date.now()
+	let data			={	
+			status     	: status,
+			modified: {
+				user_id     : 0,
+				user_name   : 0,
+				time       : Date.now()
+			}
 		}
-	};
 	
-	ItemsModel.updateOne({_id: id}, data, (err, result) => {
-		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
-		res.redirect(linkIndex);
-	});
+		ItemsModel.updateOne({_id: id}, data , (err, result) => {
+			req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
+			res.redirect(linkIndex);
+		});
 });
 
 // Change status - Multi
 router.post('/change-status/:status', (req, res, next) => {
 	let currentStatus	= ParamsHelpers.getParam(req.params, 'status', 'active'); 
-	ItemsModel.updateMany({_id: {$in: req.body.cid }}, {status: currentStatus}, (err, result) => {
+	let data			={	
+		status     	: currentStatus,
+		modified: {
+			user_id     : 0,
+			user_name   : 0,
+			time       : Date.now()
+		}
+	}
+	ItemsModel.updateMany({_id: {$in: req.body.cid }}, data, (err, result) => {
 		req.flash('success', util.format(notify.CHANGE_STATUS_MULTI_SUCCESS, result.n) , false);
 		res.redirect(linkIndex);
 	});
 });
+
+
 
 // Change ordering - Multi
 router.post('/change-ordering', (req, res, next) => {
@@ -103,25 +134,26 @@ router.post('/change-ordering', (req, res, next) => {
 	
 	if(Array.isArray(cids)) {
 		cids.forEach((item, index) => {
-			let data 			= {
-				ordering		: parseInt(orderings[index]),
-				modified		: {
+			let data			={	
+				ordering : parseInt(ordering[index]),
+				modified: {
 					user_id     : 0,
 					user_name   : 0,
 					time       : Date.now()
 				}
-			};
+			}
+
 			ItemsModel.updateOne({_id: item}, data, (err, result) => {});
 		})
 	}else{ 
-		let data 			= {
-			ordering		: parseInt(orderings[index]),
-			modified		: {
+		let data			={	
+			ordering : parseInt(ordering),
+			modified: {
 				user_id     : 0,
 				user_name   : 0,
 				time       : Date.now()
 			}
-		};
+		}
 		ItemsModel.updateOne({_id: cids}, data, (err, result) => {});
 	}
 
@@ -149,28 +181,24 @@ router.post('/delete', (req, res, next) => {
 // FORM
 router.get(('/form(/:id)?'), async (req, res, next) => {
 	let id		= ParamsHelpers.getParam(req.params, 'id', '');
-	let item	= {name: '', ordering: 0, status: 'novalue' , groups_user : '' , group_name: '' };
+	let item	= {name: '', ordering: 0, status: 'novalue' , groups_id: '' , groups_name: '' };
 	let errors   = null;
-	let GRoupsItems   = [];
+	let groupsItems = [];
 
-	await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) => {
-		GRoupsItems = items;
-		GRoupsItems.unshift({_id: 'novalue' , name: 'choose groups'});
-		
-	});
-	console.log(GRoupsItems);
-
+	await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+		groupsItems = items;
+		groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
+	})
 	if(id === '') { // ADD
-		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors , GRoupsItems});
+		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors , groupsItems});
 	}else { // EDIT
 		ItemsModel.findById(id, (err, item) =>{
-			item.groups_user = item.groups_user.id;
-			item.group_name = item.groups_user.name;
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , GRoupsItems});
+			item.groups_id = item.groups.id;
+			item.groups_name = item.groups.name;
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , groupsItems});
 		});	
 	}
 });
-
 
 // SAVE = ADD EDIT
 router.post('/save', async (req, res, next) => {
@@ -182,31 +210,29 @@ router.post('/save', async (req, res, next) => {
 
 	if(typeof item !== "undefined" && item.id !== "" ){	// edit
 		if(errors) { 
-			let GRoupsItems = [];
+			let groupsItems = [];
 
-			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) => {
-				GRoupsItems = items;
-				GRoupsItems.unshift({_id: 'novalue' , name: 'choose groups'});
-			});
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , GRoupsItems});
+			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+				groupsItems = items;
+				groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
+			})
+	
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , groupsItems});
 		}else {
 			ItemsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
-				name				: item.name,
-				status				: item.status,
-				groups				: item.groups,
-				content 			: item.content,
-				groups_user  : {
-					id     	: item.groups_user,
-					name  	: item.group_name,
+				name			: item.name,
+				content			: item.content,
+				status			: item.status,
+				groups :  {
+					id     : item.groups_id,
+					name   : item.groups_name,
 				},
-				modified			: {
+				modified: {
 					user_id     : 0,
 					user_name   : 0,
 					time       : Date.now()
-					}
-			
-				
+				}
 			}, (err, result) => {
 				req.flash('success', notify.EDIT_SUCCESS, false);
 				res.redirect(linkIndex);
@@ -214,26 +240,25 @@ router.post('/save', async (req, res, next) => {
 		}
 	}else { // add
 		if(errors) { 
-			let GRoupsItems = [];
+			let groupsItems = [];
 
-			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) => {
-				GRoupsItems = items;
-				GRoupsItems.unshift({_id: 'novalue' , name: 'choose groups'});
-			});
-
-			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors , GRoupsItems});
+			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+				groupsItems = items;
+				groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
+			})
+			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors  , groupsItems});
 		}else {
 			item.created = {
-				user_id     	: 0,
-				user_name   	: `admin`,
-				time       		: Date.now()
+				user_id     : 0,
+				user_name   : 'admin',
+				time       : Date.now()
+			},
+			item.groups = {
+				id     : item.groups_id,
+				name   : item.groups_name,
 				
 			}
-			item.groups_user  = {
-				id     	: item.groups_user,
-				name   : item.group_name,
-			}
-
+			
 			new ItemsModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
@@ -250,5 +275,18 @@ router.get(('/sort/:sort_field/:sort_type') , (req, res, next) => {
    
 	res.redirect(linkIndex);
    });
+
+
+//---------up load from ------------
+router.get('/upload/' , (req, res, next) => {
+	res.render(`$(folderView)upload` , {pageTitle: pageTitleIndex})
+});
+
+
+
+//---------up load post ------------
+router.post(('/upload/:groups_id') , (req, res, next) => {
+	res.render(`$(folderView)upload` , {pageTitle: pageTitleIndex})
+});
 
 module.exports = router;

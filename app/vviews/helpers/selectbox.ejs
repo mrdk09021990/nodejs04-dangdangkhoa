@@ -1,12 +1,12 @@
 <% 
-    selectboxHelper = (name, items , optionSelected = "" ) => {
+    selectboxHelper = (name, items , optionSelected = '' ) => {
         let xhtml = '';
 
         items.forEach((item) => {
 
             let selected = (item.id == optionSelected ) ? `select = "selected"` : '' ; 
 
-            let id = (item.id == undefined ) ? `novalue` :  item.id ; 
+            let id = (item.id == undefined ) ? `allvalue` :  item.id ; 
 
             xhtml += `<option value="${id}">${item.name}</option>`
         });

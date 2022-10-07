@@ -2,7 +2,7 @@ var express = require('express');
 const { Collection } = require('mongoose');
 var router 	= express.Router();
 const util = require('util');
-const modelName = 'groups';
+const modelName = 'category';
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -10,10 +10,10 @@ const ItemsModel 	= require(__path_schemas + modelName);
 const ValidateItems	= require(__path_validates + modelName);
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
-
+const StringHelpers = require(__path_helpers + 'string');
 
 const linkIndex		 = '/' + systemConfig.prefixAdmin + `/${modelName}/`;
-const pageTitleIndex = 'Groups Management';
+const pageTitleIndex = 'category Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + `pages/${modelName}/`;
@@ -47,7 +47,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	
 	ItemsModel
 		.find(objWhere)
-		.select('name status ordering created modified groups_acp')
+		.select('name status ordering slug created modified')
 		.sort(sort)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
 		.limit(pagination.totalItemsPerPage)
@@ -102,25 +102,7 @@ router.post('/change-status/:status', (req, res, next) => {
 	});
 });
 
-// Change groups-acp
-router.get('/change-groups-acp/:id/:groups_acp', (req, res, next) => {
-	let currentGroupACP	= ParamsHelpers.getParam(req.params, 'groups_acp', 'yes'); 
-	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 
-	let groupACP		= (currentGroupACP === "yes") ? "no" : "yes";
-	let data			={	
-			groups_acp     	: groupACP,
-			modified: {
-				user_id     : 0,
-				user_name   : 0,
-				time       : Date.now()
-				}
-			}
-	
-	ItemsModel.updateOne({_id: id}, data, (err, result) => {
-		req.flash('success', notify.CHANGE_GROUP_ACP_SUCCESS, false);
-		res.redirect(linkIndex);
-	});
-});
+
 
 // Change ordering - Multi
 router.post('/change-ordering', (req, res, next) => {
@@ -204,7 +186,7 @@ router.post('/save', (req, res, next) => {
 				name			: item.name,
 				content			: item.content,
 				status			: item.status,
-				groups_acp     	: item.groups_acp,
+				slug    		: StringHelpers.createAlias(item.slug),
 				modified: {
 					user_id     : 0,
 					user_name   : 0,

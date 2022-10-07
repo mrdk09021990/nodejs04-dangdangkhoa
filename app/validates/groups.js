@@ -6,7 +6,7 @@ const options = {
     ordering: { min: 0, max: 100 },
     status: { value: 'novalue' },
     content: { min: 0, max: 100 },
-    groups: { value: 'value'},
+    groups_acp: { value: 'value'},
 }
 
 module.exports = {
@@ -23,8 +23,8 @@ module.exports = {
         req.checkBody('status', notify.ERROR_STATUS)
             .isNotEqual(options.status.value);
 
-        // group 
-        req.checkBody('groups', notify.GROUPS)
+        // group_acp 
+        req.checkBody('groups_acp', notify.ERROR_GROUPACP)
             .notEmpty();
 
         // content

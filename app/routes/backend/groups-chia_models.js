@@ -2,7 +2,7 @@ var express = require('express');
 const { Collection } = require('mongoose');
 var router 	= express.Router();
 const util = require('util');
-const modelName = 'sliders';
+const modelName = 'groups';
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -10,6 +10,7 @@ const ItemsModel 	= require(__path_models + modelName);
 const ValidateItems	= require(__path_validates + modelName);
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
+
 
 const linkIndex		 = '/' + systemConfig.prefixAdmin + `/${modelName}/`;
 const pageTitleIndex = 'Groups Management';
@@ -141,13 +142,15 @@ router.post('/save', (req, res, next) => {
 	}	
 });
 
-//---------SORT-------------
-
-router.get(('/sort/:sort_field/:sort_type') , (req, res, next) => {
-	req.session.sort_field		= ParamsHelpers.getParam(req.params, `sort_field`, `ordering`);
-	req.session.sort_type 		= ParamsHelpers.getParam(req.params, `sort_type`, `asc`);
-   
-	res.redirect(linkIndex);
-   });
+// Change groups-acp
+router.get('/change-groups-acp/:id/:groups_acp', (req, res, next) => {
+	let currentGroupACP	= ParamsHelpers.getParam(req.params, 'groups_acp', 'yes'); 
+	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 
+	
+	ItemsModel.changeGroupACP(currentGroupACP , id , null).then((result) => {
+		req.flash('success', notify.CHANGE_GROUP_ACP_SUCCESS, false);
+		res.redirect(linkIndex);
+	});
+});
 
 module.exports = router;

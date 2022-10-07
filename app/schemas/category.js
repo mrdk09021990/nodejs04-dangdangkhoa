@@ -7,6 +7,7 @@ var schema = new mongoose.Schema({
     ordering    : Number,
     content     : String,
     groups_acp     : String,
+    slug : String,
     created: {
         user_id     : Number,
         user_name   : String,
@@ -19,4 +20,4 @@ var schema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model(databaseConfig.col_groups, schema );
+module.exports = mongoose.model(databaseConfig.col_category , schema );

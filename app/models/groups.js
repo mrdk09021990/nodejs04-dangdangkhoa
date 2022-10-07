@@ -1,4 +1,4 @@
-const ItemsModel 	= require(__path_schemas + 'sliders');
+const GroupModel 	= require(__path_schemas + 'groups');
 
 module.exports = {
     listItems:  (params , option = null) => {
@@ -8,7 +8,7 @@ module.exports = {
         let sort 				= {};
 	    sort[params.sortField]			= params.sortType;
         
-        return ItemsModel
+        return GroupModel
             .find(objWhere)
             .select('name status ordering created modified')
             .sort(sort)
@@ -17,11 +17,11 @@ module.exports = {
     },
 
     getItem:  (id , options = null) => {
-        return ItemsModel.findById(id);
+        return GroupModel.findById(id);
     },
 
     countItems:  (params , option = null) => {
-        return ItemsModel.count(params.objWhere);
+        return GroupModel.count(params.objWhere);
     },
 
     changeStatus:  (id , currentStatus , options = null ) => {
@@ -37,12 +37,12 @@ module.exports = {
         
         if (options.task == "update-one") {
             data.status = status;
-            return ItemsModel.updateOne({_id: id} , data);
+            return GroupModel.updateOne({_id: id} , data);
         }
 
         if (options.task == "update-multi") {
             data.status = currentStatus;
-            return ItemsModel.updateMany({_id: {$in: id}} , data);
+            return GroupModel.updateMany({_id: {$in: id}} , data);
         }   
     }, 
 
@@ -59,22 +59,22 @@ module.exports = {
                 if(Array.isArray(cids)) {
                     for(let index = 0 ; index < cids.length ; index++) {
                         data.ordering =  parseInt(orderings[index]);
-                        await ItemsModel.updateOne({_id: cids[index]} ,data )
+                        await GroupModel.updateOne({_id: cids[index]} ,data )
                     }
                     return Promise.resolve("Success");
                 }else{
-                    return ItemsModel.updateOne({_id: cids} , data )
+                    return GroupModel.updateOne({_id: cids} , data )
                 }
 	},
 
     deleteItem:  ( id , options = null ) => {
        
 		if (options.task == "delete-one") {
-            return ItemsModel.deleteOne({_id: id});
+            return GroupModel.deleteOne({_id: id});
         }
 
         if (options.task == "delete-multi") {
-            return ItemsModel.remove({_id: {$in: id}});
+            return GroupModel.remove({_id: {$in: id}});
         }  
 	},
 
@@ -85,14 +85,15 @@ module.exports = {
                     user_name   : "admin",
                     time       : Date.now()
             }
-            return new ItemsModel(item).save();
+            return new GroupModel(item).save();
         }
         if (options.task == "edit") {
-            return ItemsModel.updateOne({_id: item.id} , {
+            return GroupModel.updateOne({_id: item.id} , {
 				ordering: parseInt(item.ordering),
 				name			: item.name,
 				content			: item.content,
 				status			: item.status,
+                groups_acp     	: item.groups_acp,
 				modified: {
 					user_id     : 0,
 					user_name   : 0,
@@ -100,5 +101,20 @@ module.exports = {
 				}
             });
         }
-    }
+    },
+
+    changeGroupACP:  ( currentGroupACP , id  , options = null ) => {
+
+        let groupACP		= (currentGroupACP === "yes") ? "no" : "yes";
+        let data			={	
+                groups_acp     	: groupACP,
+                modified: {
+                    user_id     : 0,
+                    user_name   : 0,
+                    time       : Date.now()
+                    }
+                }
+        
+        return GroupModel.updateOne({_id: id}, data );
+    },
 }

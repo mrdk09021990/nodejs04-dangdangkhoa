@@ -5,16 +5,20 @@ const options = {
     name: { min: 5, max: 30 },
     ordering: { min: 0, max: 100 },
     status: { value: 'novalue' },
-    groups: { value: 'novalue' },
     content: { min: 0, max: 100 },
-    groups: { value: 'value'},
+    groups_acp: { value: 'value'},
+    slug: { min: 5, max: 1000 },
 }
 
 module.exports = {
     validator: (req) => {
         // NAME
         req.checkBody('name', util.format(notify.ERROR_NAME, options.name.min, options.name.max) )
-            .isLength({ min: options.name.min, max: options.name.max })
+            .isLength({ min: options.name.min, max: options.name.max });
+
+        // slug
+        req.checkBody('slug', util.format(notify.ERROR_NAME, options.slug.min, options.slug.max) )
+            .isLength({ min: options.slug.min, max: options.slug.max })
 
         // ORDERING
         req.checkBody('ordering', util.format(notify.ERROR_ORDERING, options.ordering.min, options.ordering.max))
@@ -24,9 +28,6 @@ module.exports = {
         req.checkBody('status', notify.ERROR_STATUS)
             .isNotEqual(options.status.value);
 
-        // groups
-        req.checkBody('groups_id', notify.ERROR_GROUPS) 
-            .isNotEqual(options.groups.value);
 
         // content
         req.checkBody('content', util.format(notify.ERROR_NAME, options.content.min, options.content.max) )
