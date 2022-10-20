@@ -5,7 +5,7 @@ const util = require('util');
 const modelName = 'items';
 const path = require('path');
 
-let multer = require('multer');
+var multer = require('multer');
 let randomstring = require('randomstring');
 
 
@@ -24,7 +24,7 @@ const pageTitleIndex = 'items Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + `pages/${modelName}/`;
-const StringHelpers = require(__path_helpers + 'string');
+const StringHelpers  = require(__path_helpers + 'string');
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
@@ -215,6 +215,7 @@ router.post('/save', async (req, res, next) => {
 				name			: item.name,
 				content			: item.content,
 				status			: item.status,
+				slug 			: StringHelpers.createAlias(item.slug),
 				groups :  {
 					id     : item.groups_id,
 					name   : item.groups_name,
@@ -244,6 +245,7 @@ router.post('/save', async (req, res, next) => {
 				user_name   : 'admin',
 				time       : Date.now()
 			},
+			item.slug =	StringHelpers.createAlias(item.slug),
 			item.groups = {
 				id     : item.groups_id,
 				name   : item.groups_name,	
@@ -277,7 +279,7 @@ router.get(('/filter-groups/:groups_id') , (req, res, next) => {
 
 //---------tao phuong thuc up file anh ------------
 
-   let storage = multer.diskStorage({
+   var storage = multer.diskStorage({
 	destination : function (req ,file , cb ) {
 		cb(null , __path_public  + `uploads/items/`)
 	},
@@ -286,7 +288,7 @@ router.get(('/filter-groups/:groups_id') , (req, res, next) => {
 	}
 });
 
-let upload = multer ({storage: storage});
+var upload = multer ({storage: storage});
 
 //---------up load from ------------
 router.get('/upload' , (req, res, next) => {
@@ -294,7 +296,7 @@ router.get('/upload' , (req, res, next) => {
 });
 
 //---------up load post ------------
-router.post(('/upload' , upload.single('avatar')) , (req, res, next) => {
+router.post('/upload' , upload.single('avatar') , (req, res, next) => {
 	res.render(`${folderView}upload` , {pageTitle: pageTitleIndex})
 });
 
