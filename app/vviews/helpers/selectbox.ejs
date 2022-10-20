@@ -1,0 +1,19 @@
+<% 
+    selectboxHelper = (name, items , optionSelected = '' ) => {
+        let xhtml = '';
+
+        items.forEach((item) => {
+
+            let selected = (item.id == optionSelected ) ? `selected` : '' ; 
+
+            let id = (item.id == undefined ) ? 'allvalue' :  item.id ; 
+
+            xhtml += `<option value="${id}" ${selected} >${item.name}</option>`
+        });
+       
+        return `<select name="${name}" class="custom-select custom-select-sm">${xhtml}</select>`;
+    }
+%>
+
+
+

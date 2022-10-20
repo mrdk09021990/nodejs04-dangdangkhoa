@@ -1,0 +1,12 @@
+<% 
+groupsACPHelper = (linkPrefix , groups_acp , id) => {
+       
+        let classGroups       = (groups_acp == 'yes') ? `fas fa-check` : ` fa fa-fw fa-sort` ;
+
+        let link              = linkPrefix + 'change-groups-acp/' + id + '/' + groups_acp ;
+       
+        return `<a href="${link}"><i class="${classGroups} "></i></a>`;
+    }
+%>
+
+

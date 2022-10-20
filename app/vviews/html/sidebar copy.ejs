@@ -1,0 +1,71 @@
+<%  
+    let arrMenu = [
+        {name: 'Items', icon: 'fa-users', link: `${systemConfig.prefixAdmin}/items`},
+        {name: 'Dashboard', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/dashboard`},
+        {name: 'sliders', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/sliders`},
+        {name: 'groups', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/groups`, isChild : true, children:[{name: 'Items', icon: 'fa-users', link: `${systemConfig.prefixAdmin}/items`},{name: 'Dashboard', icon: 'fa-tachometer-alt', link: `${systemConfig.prefixAdmin}/dashboard`},]},
+        
+    ];
+
+    let xhtmlMenu = '';
+    arrMenu.forEach(menu => {
+        if(menu.isChild){
+            let htmlChild ='';
+            menu.children.forEach(child =>{
+                htmlChild += `<li class="nav-item">
+                    <a href="${child.link}" class="nav-link" data-active="${child.name.toLowerCase()}">
+                        <i class="nav-icon fas ${child.icon}"></i>
+                        <p>${child.name}</p>
+                    </a>
+                </li>`;
+            })
+            xhtmlMenu += `<li class="nav-item">
+                <a href="${menu.link}" class="nav-link" data-active="${menu.name.toLowerCase()}">
+                    <i class="nav-icon fas ${menu.icon}"></i>
+                    <p>${menu.name}</p>
+                </a>
+                <ul>
+                    ${htmlChild}
+                </ul>
+            </li>`;
+        }else{
+            xhtmlMenu += `<li class="nav-item">
+                <a href="${menu.link}" class="nav-link" data-active="${menu.name.toLowerCase()}">
+                    <i class="nav-icon fas ${menu.icon}"></i>
+                    <p>${menu.name}</p>
+                </a>
+            </li>`;
+        }
+       
+    });   
+%>
+
+<aside class="main-sidebar sidebar-dark-info elevation-4">
+    <!-- Brand Logo -->
+    <a href="index3.html" class="brand-link">
+        <img src="adminlte/images/logo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">ZendVN</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <img src="adminlte/images/default-user.jpg" class="img-circle elevation-2" alt="User Image">
+            </div>
+            <div class="info">
+                <a href="#" class="d-block">Admin ZendVN</a>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <%- xhtmlMenu %>
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+</aside>
