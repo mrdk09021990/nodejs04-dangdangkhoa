@@ -9,7 +9,6 @@ var multer = require('multer');
 let randomstring = require('randomstring');
 
 
-randomstring.generate(7);
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -280,15 +279,32 @@ router.get(('/filter-groups/:groups_id') , (req, res, next) => {
 //---------tao phuong thuc up file anh ------------
 
    var storage = multer.diskStorage({
-	destination : function (req ,file , cb ) {
+	destination :  (req ,file , cb ) => {
 		cb(null , __path_public  + `uploads/items/`)
 	},
-	filename: function (req, file , cb) {
-		cb(null , Date.now() + path.extname(file.originalname));
+	
+	filename:  (req, file , cb) => {
+		cb(null , randomstring.generate(7) + path.extname(file.originalname));
 	}
 });
 
-var upload = multer ({storage: storage});
+var upload = multer ({
+	storage: storage,
+	limits: {
+		fileSize: 1 * 1024 * 1024,
+	},
+	fileFilter:  (req , file , cb)  => {
+		const fileTypes = new RegExp ('jpeg|jpg|png|gif');
+		const extname 	= fileTypes.test(path.extname(file.originalname).toLowerCase());
+		const mimetype 	= fileTypes.test(file.mimetype);
+
+		if (mimetype && extname) {
+			return cb (null , true);
+		}else{
+			cb (new Error ('file nay ko ho tro'))
+		}
+	}
+});
 
 //---------up load from ------------
 router.get('/upload' , (req, res, next) => {
