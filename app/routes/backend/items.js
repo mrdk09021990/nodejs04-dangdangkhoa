@@ -20,6 +20,7 @@ const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + `pages/${modelName}/`;
 const StringHelpers  = require(__path_helpers + 'string');
+const uploadAvatar	 = UploadHelpers.upload('avatar' , 'items');
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
@@ -282,7 +283,7 @@ router.get('/upload' , (req, res, next) => {
 });
 
 //---------up load post ------------
-router.post('/upload' , upload.single('avatar') , (req, res, next) => {
+router.post('/upload' , uploadAvatar , (req, res, next) => {
 	res.render(`${folderView}upload` , {pageTitle: pageTitleIndex})
 });
 

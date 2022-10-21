@@ -9,4 +9,5 @@ module.exports = {
     folder_views     : 'vviews',
     folder_models    : 'models',
     folder_public    : 'public',
+    folder_uploads    : 'uploads',
 };
