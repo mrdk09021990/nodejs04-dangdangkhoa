@@ -188,71 +188,79 @@ router.get(('/form(/:id)?'), async (req, res, next) => {
 });
 
 // SAVE = ADD EDIT
-router.post('/save', async (req, res, next) => {
-	req.body = JSON.parse(JSON.stringify(req.body));
-	ValidateItems.validator(req);
+router.post('/save',  (req, res, next) => {
+	uploadAvatar (req, res, async (errUpload) => {
 
-	let item = Object.assign(req.body);
-	let errors = req.validationErrors();
+		req.body = JSON.parse(JSON.stringify(req.body));
+		ValidateItems.validator(req);
 
-	if(typeof item !== "undefined" && item.id !== "" ){	// edit
-		if(errors) { 
-			let groupsItems = [];
+		let item = Object.assign(req.body);
+		let errors = req.validationErrors();
 
-			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
-				groupsItems = items;
-				groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
-			})
-	
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , groupsItems});
-		}else {
-			ItemsModel.updateOne({_id: item.id}, {
-				ordering: parseInt(item.ordering),
-				name			: item.name,
-				content			: item.content,
-				status			: item.status,
-				slug 			: StringHelpers.createAlias(item.slug),
-				groups :  {
-					id     : item.groups_id,
-					name   : item.groups_name,
-				},
-				modified: {
-					user_id     : 0,
-					user_name   : 0,
-					time       : Date.now()
-				}
-			}, (err, result) => {
-				req.flash('success', notify.EDIT_SUCCESS, false);
-				res.redirect(linkIndex);
-			});
-		}
-	}else { // add
-		if(errors) { 
-			let groupsItems = [];
-
-			await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
-				groupsItems = items;
-				groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
-			})
-			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors  , groupsItems});
-		}else {
-			item.created = {
-				user_id     : 0,
-				user_name   : 'admin',
-				time       : Date.now()
-			},
-			item.slug =	StringHelpers.createAlias(item.slug),
-			item.groups = {
-				id     : item.groups_id,
-				name   : item.groups_name,	
+		if (errUpload){
+			errors.push({param: 'avatar' , msg: errUpload});
 			}
-			
-			new ItemsModel(item).save().then(()=> {
-				req.flash('success', notify.ADD_SUCCESS, false);
-				res.redirect(linkIndex);
-			})
+
+		if(typeof item !== "undefined" && item.id !== "" ){	// edit
+			if(errors) { 
+				let groupsItems = [];
+
+				await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+					groupsItems = items;
+					groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
+				})
+		
+				res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , groupsItems});
+			}else {
+				ItemsModel.updateOne({_id: item.id}, {
+					ordering: parseInt(item.ordering),
+					name			: item.name,
+					content			: item.content,
+					status			: item.status,
+					slug 			: StringHelpers.createAlias(item.slug),
+					groups :  {
+						id     : item.groups_id,
+						name   : item.groups_name,
+					},
+					modified: {
+						user_id     : 0,
+						user_name   : 0,
+						time       : Date.now()
+					}
+				}, (err, result) => {
+					req.flash('success', notify.EDIT_SUCCESS, false);
+					res.redirect(linkIndex);
+				});
+			}
+		}else { // add
+			if(errors) { 
+				let groupsItems = [];
+
+				await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
+					groupsItems = items;
+					groupsItems.unshift({_id: 'novalue' , name: 'Choose groups'});
+				})
+				res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors  , groupsItems});
+			}else {
+				item.created = {
+					user_id     : 0,
+					user_name   : 'admin',
+					time       : Date.now()
+				},
+				item.slug =	StringHelpers.createAlias(item.slug),
+				item.groups = {
+					id     : item.groups_id,
+					name   : item.groups_name,	
+				}
+				
+				new ItemsModel(item).save().then(()=> {
+					req.flash('success', notify.ADD_SUCCESS, false);
+					res.redirect(linkIndex);
+				})
+			}
 		}
-	}	
+			
+	});		
 });
 
 //---------SORT-------------
@@ -273,19 +281,27 @@ router.get(('/filter-groups/:groups_id') , (req, res, next) => {
 
 
 
-//---------tao phuong thuc up file anh ------------
+// //---------tao phuong thuc up file anh ------------
 
    
 
-//---------up load from ------------
-router.get('/upload' , (req, res, next) => {
-	res.render(`${folderView}upload` , {pageTitle: pageTitleIndex})
-});
+// //---------up load from ------------
+// router.get('/upload' , (req, res, next) => {
+// 	let errors   = null;
+// 	res.render(`${folderView}upload` , {pageTitle: pageTitleIndex , errors})
+// });
 
-//---------up load post ------------
-router.post('/upload' , uploadAvatar , (req, res, next) => {
-	res.render(`${folderView}upload` , {pageTitle: pageTitleIndex})
-});
+// //---------up load post ------------
+// router.post('/upload'  , (req, res, next) => {
+// 	let errors   = [];
+// 	uploadAvatar (req, res, function(err){
+// 		if (err){
+// 			errors.push({param: 'avatar' , msg: err});
+// 		}
+// 		res.render(`${folderView}upload` , {pageTitle: pageTitleIndex , errors})
+// 	})
+	
+// });
 
 module.exports = router;
 

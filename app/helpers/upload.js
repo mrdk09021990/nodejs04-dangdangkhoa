@@ -29,7 +29,7 @@ let uploadFile =   (field , folderDes = `items` , fileNameLength = 7 , fileSizeM
 			if (mimetype && extname) {
 				return cb (null , true);
 			}else{
-				cb (new Error ('file nay ko ho tro'))
+				cb  ('file nay ko ho tro');
 			}
 		}
 	}).single(field);
