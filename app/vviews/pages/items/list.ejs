@@ -8,8 +8,9 @@
 <% include ./../../helpers/selectbox %>
 
 <% 
-	const collection = "items";
-	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
+	const collection 	= "items";
+	const linkPrefix 	= systemConfig.prefixAdmin + `/${collection}/`;
+	const folderUpload 	= `uploads/items/` ;
 %>
 
 
@@ -75,6 +76,7 @@
 						<th class="text-center">#</a></th>
 						
 						<%- sortHelper(linkPrefix , 'name' , 'name' , sortField , sortType , 'width: 20%') %>
+						<th class="text-center">avatar</a></th>
 						<%- sortHelper(linkPrefix , 'status' , 'status' , sortField , sortType) %>
 						<%- sortHelper(linkPrefix , 'ordering' , 'ordering' , sortField , sortType, 'width: 20%') %>
 						<%- sortHelper(linkPrefix , 'groups' , 'groups.name' , sortField , sortType) %>
@@ -96,6 +98,9 @@
 							</td>
 							<td class="text-center"><%= index+1 %></td>
 							<td class="text-center"><%- highlightHelper(item.name, keyword) %></td>
+							<td class="text-center"> 
+								<img class="img-reponsive img-avatar" src="<%= folderUpload + item.avatar %>" alt="<%= item.name %>" />
+							</td>
 							<td class="text-center position-relative">
 								<%- statusHelper(linkPrefix, item.status, item.id) %>
 							</td>

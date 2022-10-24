@@ -55,7 +55,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	
 	ItemsModel
 		.find(objWhere)
-		.select('name status ordering created modified groups.name slug')
+		.select('name status ordering created modified groups.name slug avatar')
 		.sort(sort)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
 		.limit(pagination.totalItemsPerPage)
@@ -200,6 +200,7 @@ router.post('/save',  (req, res, next) => {
 		if (errUpload){
 			errors.push({param: 'avatar' , msg: errUpload});
 			}
+		item.avatar = (req.file.filename);
 
 		if(typeof item !== "undefined" && item.id !== "" ){	// edit
 			if(errors) { 
@@ -212,6 +213,7 @@ router.post('/save',  (req, res, next) => {
 		
 				res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors , groupsItems});
 			}else {
+				
 				ItemsModel.updateOne({_id: item.id}, {
 					ordering: parseInt(item.ordering),
 					name			: item.name,
@@ -234,6 +236,7 @@ router.post('/save',  (req, res, next) => {
 			}
 		}else { // add
 			if(errors) { 
+				console.log(req.file.filename);
 				let groupsItems = [];
 
 				await GroupsModel.find({} , {_id: 1 , name: 1}).then((items) =>{
