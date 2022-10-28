@@ -17,5 +17,6 @@ module.exports = {
     CHANGE_groups_SUCCESS : 'Cập nhật groups thành công',
     ERROR_GROUPACP: 'Phải là một giá trị khác rỗng',
     ERROR_GROUPS: 'Phải là một giá trị khác rỗng',
+    ERROR_SLUG: 'Phải là một giá trị khác rỗng',
 };
 

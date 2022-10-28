@@ -6,7 +6,8 @@ const options = {
     ordering: { min: 0, max: 100 },
     status: { value: 'novalue' },
     groups: { value: 'novalue' },
-    content: { min: 0, max: 100 },
+    content: { min: 1, max: 100 },
+    slug:   { min: 1, max: 100 },
     groups: { value: 'value'},
 }
 
@@ -25,11 +26,15 @@ module.exports = {
             .isNotEqual(options.status.value);
 
         // groups
-        req.checkBody('groups_id', notify.ERROR_GROUPS) 
+        req.checkBody('groups', notify.ERROR_GROUPS) 
             .isNotEqual(options.groups.value);
 
         // content
-        req.checkBody('content', util.format(notify.ERROR_NAME, options.content.min, options.content.max) )
+        req.checkBody('content', util.format(notify.ERROR_NAME, options.content.min, options.content.max))
             .isLength({ min: options.content.min, max: options.content.max })
+
+        // slug
+        req.checkBody('slug', util.format(notify.ERROR_SLUG, options.slug.min, options.slug.max))
+            .isLength({ min: options.slug.min, max: options.slug.max })
     }
 }
